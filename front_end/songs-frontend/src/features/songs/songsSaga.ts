@@ -6,8 +6,14 @@ import {
   fetchSongsSuccess,
   fetchSongsFailure,
   createSong,
+  createSongSuccess,
+  createSongFailure,
   updateSong,
+  updateSongSuccess,
+  updateSongFailure,
   deleteSong,
+  deleteSongSuccess,
+  deleteSongFailure,
   fetchStats,
   fetchStatsSuccess,
   fetchStatsFailure,
@@ -30,11 +36,12 @@ function* createSongWorker(action: {
   payload: CreateSongDto;
 }): SagaIterator {
   try {
-    yield call(api.post, "/songs", action.payload);
-    yield put(fetchSongs());
+    const response = yield call(api.post, "/songs", action.payload);
+    const newSong = response.data;
+    yield put(createSongSuccess(newSong));
     yield put(fetchStats());
   } catch (err: any) {
-    yield put(fetchSongsFailure(err?.response?.data?.message ?? err.message));
+    yield put(createSongFailure(err?.response?.data?.message ?? err.message));
   }
 }
 
@@ -44,11 +51,12 @@ function* updateSongWorker(action: {
 }): SagaIterator {
   try {
     const { id, changes } = action.payload;
-    yield call(api.put, `/songs/${id}`, changes);
-    yield put(fetchSongs());
+    const response = yield call(api.patch, `/songs/${id}`, changes);
+    const updatedSong = response.data;
+    yield put(updateSongSuccess(updatedSong));
     yield put(fetchStats());
   } catch (err: any) {
-    yield put(fetchSongsFailure(err?.response?.data?.message ?? err.message));
+    yield put(updateSongFailure(err?.response?.data?.message ?? err.message));
   }
 }
 
@@ -59,10 +67,10 @@ function* deleteSongWorker(action: {
   try {
     const id = action.payload;
     yield call(api.delete, `/songs/${id}`);
-    yield put(fetchSongs());
+    yield put(deleteSongSuccess(id));
     yield put(fetchStats());
   } catch (err: any) {
-    yield put(fetchSongsFailure(err?.response?.data?.message ?? err.message));
+    yield put(deleteSongFailure(err?.response?.data?.message ?? err.message));
   }
 }
 
@@ -78,6 +86,7 @@ function* fetchStatsWorker(): SagaIterator {
 }
 
 export default function* songsSaga(): SagaIterator {
+  console.log("Saga: songsSaga initialized");
   yield all([
     takeLatest(fetchSongs.type, fetchSongsWorker),
     takeLatest(createSong.type, createSongWorker),

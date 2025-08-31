@@ -7,7 +7,6 @@ import {
   StatsSummary,
 } from "./types";
 
-
 const initialState: SongsState = {
   items: [],
   loading: false,
@@ -32,9 +31,49 @@ const songsSlice = createSlice({
       state.error = action.payload;
     },
 
-    createSong(_state, _action: PayloadAction<CreateSongDto>) {},
-    updateSong(_state, _action: PayloadAction<UpdateSongDto>) {},
-    deleteSong(_state, _action: PayloadAction<string>) {},
+    createSong(state, action: PayloadAction<CreateSongDto>) {
+      state.loading = true;
+      state.error = undefined;
+    },
+    createSongSuccess(state, action: PayloadAction<Song>) {
+      state.items.push(action.payload);
+      state.loading = false;
+    },
+    createSongFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    updateSong(state, action: PayloadAction<UpdateSongDto>) {
+      state.loading = true;
+      state.error = undefined;
+    },
+    updateSongSuccess(state, action: PayloadAction<Song>) {
+      const index = state.items.findIndex(
+        (song) => song._id === action.payload._id
+      );
+      if (index !== -1) {
+        state.items[index] = action.payload;
+      }
+      state.loading = false;
+    },
+    updateSongFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    deleteSong(state, action: PayloadAction<string>) {
+      state.loading = true;
+      state.error = undefined;
+    },
+    deleteSongSuccess(state, action: PayloadAction<string>) {
+      state.items = state.items.filter((song) => song._id !== action.payload);
+      state.loading = false;
+    },
+    deleteSongFailure(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+    },
 
     fetchStats(state) {
       state.error = undefined;
@@ -53,8 +92,14 @@ export const {
   fetchSongsSuccess,
   fetchSongsFailure,
   createSong,
+  createSongSuccess,
+  createSongFailure,
   updateSong,
+  updateSongSuccess,
+  updateSongFailure,
   deleteSong,
+  deleteSongSuccess,
+  deleteSongFailure,
   fetchStats,
   fetchStatsSuccess,
   fetchStatsFailure,
